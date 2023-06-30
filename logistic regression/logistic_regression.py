@@ -58,18 +58,18 @@ def sigmoid(z):
     z = 1/(1+np.exp(-z))
     return z
 
-def forward(X, w, threshold_val=0.7):
-    threshold_val = threshold_val
+def forward(X, w):
+    # threshold_val = threshold_val
     z = np.dot(X,w)
     a = sigmoid(z)
-    a = np.where(a >= threshold_val, 1, 0)
+    # a = np.where(a >= threshold_val, 1, 0)
     return a
 
 def cross_entropy(y, a, m):
     epsilon = 1e-15  # small constant to avoid division by zero
     a = np.clip(a, epsilon, 1 - epsilon)  # clip predicted probabilities to avoid log(0) and log(1)
     loss = -(y*np.log(a) + (1-y)*np.log(1-a))
-    # loss = np.sum(loss)
+    loss = np.sum(loss)
     loss = np.mean(loss)
 
     return loss   
