@@ -32,6 +32,11 @@ def read_data(path, type):
     y = data[['admit']].values
     return X,y
 
+def read_data_txt(path):
+    data = np.loadtxt(path, delimiter=',')
+    X, y = data[:,:-1], data[:,-1]
+    return X, y
+
 def add_bias_feature(X, m):
     x0 = np.ones((m,1))
     X = np.concatenate((x0, X), axis=1)
@@ -51,7 +56,7 @@ def normalize(X, mode):
     return X
 
 def init_params(n):
-    w = np.random.rand(n+1)
+    w = np.random.randn(n+1, )
     return w
 
 def sigmoid(z):
@@ -66,12 +71,9 @@ def forward(X, w):
     return a
 
 def cross_entropy(y, a, m):
-    epsilon = 1e-15  # small constant to avoid division by zero
-    a = np.clip(a, epsilon, 1 - epsilon)  # clip predicted probabilities to avoid log(0) and log(1)
-    loss = -(y*np.log(a) + (1-y)*np.log(1-a))
-    loss = np.sum(loss)
-    loss = np.mean(loss)
-
+    # epsilon = 1e-15  # small constant to avoid division by zero
+    # a = np.clip(a, epsilon, 1 - epsilon)  # clip predicted probabilities to avoid log(0) and log(1)
+    loss = (-1/m) * np.sum(y*np.log(a) + (1-y)*np.log(1-a))
     return loss   
 
 def gradients(X, y, a, w, m):
@@ -83,35 +85,34 @@ def gradients(X, y, a, w, m):
     return dw
 
 def backward(w, dw, lr):
-    w_updated = w - lr*dw
+    w_updated = w - lr * dw
     return w_updated
 
 def train(X, y, w, m, lr=0.001, epochs=100):
+    loss_history = []
     for i in range(epochs):
         a = forward(X, w)
         loss = cross_entropy(y, a, m)
         dw = gradients(X, y, a, w, m)
         w = backward(w, dw, lr=lr)
-        if i%1000 == 0:
-            print('at epoch', i ,'loss =', loss, 'w_updated =', w)
-    return loss, w
-
+        if i % 1000 == 0:
+            print('Epoch:', i ,'Loss:', loss)
+        loss_history.append(loss)
+    return loss_history, w
 
 
 if __name__ == "__main__":
-    path = './logistic regression/student_data.csv'
-    X, y = read_data(path, type='csv')
-    m = X.shape[0]
-    n = X.shape[1]
-    epochs = 10000
-    # X, y = create_data(m,n)
+    # path = './logistic regression/student_data.csv'
+    path = './logistic regression/data.txt'
+    X, y = read_data_txt(path)
+    m, n = X.shape
+    X = normalize(X, mode='z_score')
     X = add_bias_feature(X, m)
-    X = normalize(X, mode='std')
     w = init_params(n)
-    loss, w_updated = train(X, y, w, m, lr=0.009, epochs=epochs)
-    # plt.plot(epochs, loss)
-    # plt.show()
-    print ()
+    loss, w_updated = train(X, y, w, m, lr=1e-3, epochs=100000)
+    plt.plot(loss)
+    plt.show()
+    print()
 
     
     
